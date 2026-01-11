@@ -50,7 +50,7 @@ def softmax(z):
 
 
 # ==========================
-# Scratch model: 1 hidden layer (original  - ch11)
+# model: 1 hidden layer (original  - ch11)
 # ==========================
 class NeuralNetMLP:
     """
@@ -78,7 +78,7 @@ class NeuralNetMLP:
 
         # Output layer
         z_out = np.dot(a_h, self.weight_out.T) + self.bias_out
-        a_out = softmax(z_out)
+        a_out = sigmoid(z_out)
         return a_h, a_out
 
     def backward(self, x, a_h, a_out, y):
@@ -86,7 +86,12 @@ class NeuralNetMLP:
         y_onehot = int_to_onehot(y, self.num_classes)
 
         # dLoss/dOutAct
-        delta_out = softmax_mse_delta(a_out, y_onehot)
+        # delta_out = softmax_mse_delta(a_out, y_onehot)
+
+        # sigmoid like in chp11
+        d_loss__d_a_out = 2.0 * (a_out - y_onehot) / y.shape[0]
+        d_a_out__d_z_out = a_out * (1.0 - a_out)
+        delta_out = d_loss__d_a_out * d_a_out__d_z_out
 
         # output gradients
         d_loss__dw_out = np.dot(delta_out.T, a_h)
@@ -105,7 +110,7 @@ class NeuralNetMLP:
 
 
 # ==========================
-# Scratch model: 2 hidden layers extention
+# model: 2 hidden layers extention
 # ==========================
 
 class NeuralNetMLP2Hidden:
@@ -145,7 +150,7 @@ class NeuralNetMLP2Hidden:
 
         # Output layer
         z_out = np.dot(a_h2, self.weight_out.T) + self.bias_out
-        a_out = softmax(z_out)
+        a_out = sigmoid(z_out)
 
         return a_h1, a_h2, a_out
 
@@ -265,10 +270,11 @@ def train(model, X_train, y_train, X_valid, y_valid, num_epochs,
         epoch_train_acc.append(train_acc * 100.0)
         epoch_valid_acc.append(valid_acc * 100.0)
 
-        print(f"[1H] Epoch: {e + 1:03d}/{num_epochs:03d} "
-              f"| Train MSE: {train_mse:.2f} "
-              f"| Train Accuracy: {train_acc*100:.2f}% "
-              f"| Valid Accuracy: {valid_acc*100:.2f}%")
+        if (e + 1) % 10 == 0 or e == 0:
+            print(f'[1H] Epoch: {e + 1:03d}/{num_epochs:03d} '
+                  f'| Train MSE: {train_mse:.2f} '
+                  f'| Train Acc: {train_acc:.2f}% '
+                  f'| Valid Acc: {valid_acc:.2f}%')
 
     return epoch_loss, epoch_train_acc, epoch_valid_acc
 
@@ -291,7 +297,11 @@ def train_2hidden(model, X_train, y_train, X_valid, y_valid,
             y_onehot = int_to_onehot(y_mb, model.num_classes)
 
             # Output layer
-            delta_out = softmax_mse_delta(a_out, y_onehot)
+            # delta_out = softmax_mse_delta(a_out, y_onehot)
+
+            d_loss__d_a_out = 2.0 * (a_out - y_onehot) / y_mb.shape[0]
+            d_a_out__d_z_out = a_out * (1.0 - a_out)
+            delta_out = d_loss__d_a_out * d_a_out__d_z_out
 
             dW_out = np.dot(delta_out.T, a_h2)
             db_out = np.sum(delta_out, axis=0)
@@ -327,10 +337,11 @@ def train_2hidden(model, X_train, y_train, X_valid, y_valid,
         epoch_train_acc.append(train_acc * 100.0)
         epoch_valid_acc.append(valid_acc * 100.0)
 
-        print(f"[2H] Epoch: {e + 1:03d}/{num_epochs:03d} "
-              f"| Train MSE: {train_mse:.2f} "
-              f"| Train Accuracy: {train_acc*100:.2f}% "
-              f"| Valid Accuracy: {valid_acc*100:.2f}%")
+        if (e + 1) % 10 == 0 or e == 0:
+            print(f"[2H] Epoch: {e + 1:03d}/{num_epochs:03d} "
+                  f"| Train MSE: {train_mse:.2f} "
+                  f"| Train Acc: {train_acc * 100:.2f}% "
+                  f"| Valid Acc: {valid_acc * 100:.2f}%")
 
     return epoch_loss, epoch_train_acc, epoch_valid_acc
 

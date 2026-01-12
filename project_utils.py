@@ -89,7 +89,7 @@ class NeuralNetMLP:
         # delta_out = softmax_mse_delta(a_out, y_onehot)
 
         # sigmoid like in chp11
-        d_loss__d_a_out = 2.0 * (a_out - y_onehot) / y.shape[0]
+        d_loss__d_a_out = 2.0 * (a_out - y_onehot) / y_mb.shape[0]
         d_a_out__d_z_out = a_out * (1.0 - a_out)
         delta_out = d_loss__d_a_out * d_a_out__d_z_out
 

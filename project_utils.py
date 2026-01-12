@@ -367,13 +367,21 @@ class TorchMLP(nn.Module):
         self.fc2 = nn.Linear(500, 500)
         self.fc3 = nn.Linear(500, 10)
 
+
+        nn.init.xavier_uniform_(self.fc1.weight)
+        nn.init.xavier_uniform_(self.fc2.weight)
+        nn.init.xavier_uniform_(self.fc3.weight)
+
+        nn.init.zeros_(self.fc1.bias)
+        nn.init.zeros_(self.fc2.bias)
+        nn.init.zeros_(self.fc3.bias)
+
     def forward(self, x):
         x = torch.sigmoid(self.fc1(x))
         x = torch.sigmoid(self.fc2(x))
         logits = self.fc3(x)
         probas = torch.softmax(logits, dim=1)  # softmax on output
         return probas
-
 
 def train_torch_mse_softmax(
     X_train, y_train, X_test, y_test,
